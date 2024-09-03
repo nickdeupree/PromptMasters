@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiplash Clone</title>
+    <style>
+        .voting-image{
+            width: 800px;
+            height: 800px;
+        }
+        .generated-image{
+            width: 800px;
+            height: 800px;
+        }
+    </style>
+    <!-- <link rel="stylesheet" href="style.css"> -->
+</head>
+<body>
+    <h1>Prompt Masters!</h1>
+    
+    <div id="room-setup">
+        <input type="text" id="player-name" placeholder="Enter your name" />
+        <input type="text" id="room-id" placeholder="Enter Room ID">
+        <button id="join-room">Join Room</button>
+    </div>
+    
+    <div id="game-controls" style="display: none;">
+        <div id="player-list"></div>
+        <h3>Game Options</h3>
+        <label for="max-rounds">Max Rounds:</label>
+        <select id="max-rounds">
+            <option value="1">1</option>
+            <option value="3" selected>3</option>
+            <option value="5">5</option>
+            <option value="7">7</option>
+            <option value="10">10</option>
+        </select>
+
+        <label for="bonus-amount">Bonus Amount:</label>
+        <select id="bonus-amount">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="5">5</option>
+        </select>
+
+        <label for="max-generations">Max Generations per Round:</label>
+        <select id="max-generations">
+            <option value="3">3</option>
+            <option value="5" selected>5</option>
+            <option value="7">7</option>
+            <option value="10">10</option>
+        </select>
+        <button id="start-game">Start Game</button>
+    </div>
+
+    <div id="game-area" style="display: none;">
+        <div id="pair-prompt"></div>
+        <div id="image-generation">
+            <input type="text" id="user-prompt" placeholder="Enter your prompt" />
+            <button id="generate-image">Generate Image</button>
+            <div id="generation-label"></div>
+            <div id="generated-image"></div>
+            <button id="submit-image" style="display: none;">Submit Image</button>
+        </div>
+        
+        <div id="voting-area" style="display: none;">
+            <div id="vote-images"></div>
+            <button id="vote-first">Vote for First Image</button>
+            <button id="vote-second">Vote for Second Image</button>
+        </div>
+        <div id="results" style="display: none;">
+            <span id="winner"></span>
+            <div id="vote-images"></div>
+            <button id="results-continue-button" style="display: none;">Continue</button>
+        </div>
+        <div id="leaderboard" style="display: none;">
+            <div id="leaderboard-title"><h2>Leaderboard</h2></div>
+            <div id="leaderboard-list"></div>
+            <button id="leaderboard-continue-button" style="display: none;">Continue</button>
+        </div>
+        <div id="final-winner-section" style="display: none;">
+            <h2 id="final-winner"></h2>
+            <button id="new-game-button" style="display: none;">Start New Game</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
