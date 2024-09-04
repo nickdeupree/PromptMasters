@@ -11,11 +11,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const POLLINATIONS_API_URL = 'https://image.pollinations.ai/prompt/'
-
+const POLLINATIONS_API_URL = 'https://image.pollinations.ai/prompt/';
 let BONUS = 2;
 
-// Serve static files (index.html and script.js)
 app.use(express.static(path.join(__dirname, '/')));
 
 let rooms = {};
@@ -33,8 +31,6 @@ fs.readFile(path.join(__dirname, 'prompts.txt'), 'utf-8', (err, data) => {
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
-    
-
     socket.on('join_room', ({ roomId, name }) => {
         socket.join(roomId);
         if (!rooms[roomId]) {
@@ -50,28 +46,30 @@ io.on('connection', (socket) => {
                 continueCount: 0,
             };
         }
-        rooms[roomId].players.push({ id: socket.id, name: name });
+        rooms[roomId].players.push({ id: socket.id, name });
         rooms[roomId].playersScore[socket.id] = 0;
         io.to(roomId).emit('update_players', rooms[roomId].players);
         console.log(`${name} joined room: ${roomId}`);
     });
 
     socket.on('player_pressed_result_continue', (roomId) => {
-        if(rooms[roomId]){
-            rooms[roomId].continueCount++;
-            if(rooms[roomId].continueCount === rooms[roomId].players.length){
-                rooms[roomId].continueCount = 0;
-                console.log("Showing leaderboard")
-                io.to(roomId).emit('show_leaderboard',rooms[roomId]);
+        const room = rooms[roomId];
+        if (room) {
+            room.continueCount++;
+            if (room.continueCount === room.players.length) {
+                room.continueCount = 0;
+                console.log("Showing leaderboard");
+                io.to(roomId).emit('show_leaderboard', room);
             }
         }
     });
 
     socket.on('player_pressed_leaderboard_continue', (roomId) => {
-        if(rooms[roomId]){
-            rooms[roomId].continueCount++;
-            if(rooms[roomId].continueCount === rooms[roomId].players.length){
-                rooms[roomId].continueCount = 0;
+        const room = rooms[roomId];
+        if (room) {
+            room.continueCount++;
+            if (room.continueCount === room.players.length) {
+                room.continueCount = 0;
                 io.to(roomId).emit('show_next_pair');
                 io.to(roomId).emit('advance_pair', roomId);
             }
@@ -81,7 +79,7 @@ io.on('connection', (socket) => {
     socket.on('option_change', ({ roomId, maxRounds, bonusAmount, maxGenerations }) => {
         socket.to(roomId).emit('update_options', { maxRounds, bonusAmount, maxGenerations });
     });
-    
+
     socket.on('start_game', ({ roomId, maxRounds, bonusAmount, maxGenerations }) => {
         console.log("Starting game in room:", roomId);
         io.to(roomId).emit('ensureVotingGone');
@@ -120,26 +118,25 @@ io.on('connection', (socket) => {
     socket.on('generate_image', async (prompt) => {
         const room = rooms[Object.keys(rooms).find(roomId => rooms[roomId].players.some(player => player.id === socket.id))];
         const remainingGenerations = room.generations[socket.id];
-    
+
         if (remainingGenerations > 0) {
             try {
                 const encodedPrompt = encodeURIComponent(prompt);
                 const response = await axios.get(`${POLLINATIONS_API_URL}${encodedPrompt}`, {
                     params: {
-                        model: 'flux', // or 'flux', depending on preference
+                        model: 'flux',
                         width: 800,
                         height: 800,
                         nologo: true,
                         enhance: true
                     },
-                    responseType: 'arraybuffer' // Set response type to handle binary data
+                    responseType: 'arraybuffer'
                 });
-    
-                // Resize the image using sharp
+
                 const resizedImageBuffer = await sharp(response.data)
                     .resize(300, 300)
                     .toBuffer();
-    
+
                 const imageUrl = `data:image/jpeg;base64,${resizedImageBuffer.toString('base64')}`;
                 room.generations[socket.id]--;
                 socket.emit('image_generated', { imageUrl, remainingGenerations: room.generations[socket.id] });
@@ -152,10 +149,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // socket.on('save_image', (roomId, imageUrl) => {
-    //     rooms[roomId].images[socket.id] = imageUrl;
-    // });
-
     socket.on('check_player_name', ({ roomId, playerName }) => {
         console.log(`Checking player name: ${playerName} in room: ${roomId}`);
         const room = rooms[roomId];
@@ -167,74 +160,68 @@ io.on('connection', (socket) => {
         }
     });
 
-
     socket.on('submit_image', (roomId, imageUrl) => {
         console.log("Received image submission from", socket.id);
         const room = rooms[roomId];
-        console.log("adding image to socket id", socket.id);
         room.images[socket.id] = imageUrl;
-        console.log(Object.keys(room.images), room.players.length);
         if (Object.keys(room.images).length === room.players.length) {
             console.log("All images submitted");
             startVoting(roomId);
         }
     });
 
-
     socket.on('vote', (roomId, vote) => {
         const room = rooms[roomId];
         const currentPair = room.pairs[room.currentPairIndex];
-        firstPlayer = currentPair[0].id;
-        secondPlayer = currentPair[1].id;
+        console.log("voting on pair", currentPair);
+        const [firstPlayer, secondPlayer] = currentPair.map(player => player.id);
 
-        
         console.log("Voting on pair: ", currentPair);
         room.votes[socket.id] = vote;
-    
+
         if (Object.keys(room.votes).length === room.players.length) {
             const voteCount = { first: 0, second: 0 };
-            const voteDetails = {first: [], second: []};
+            const voteDetails = { first: [], second: [] };
             for (const [voterId, vote] of Object.entries(room.votes)) {
                 if (vote === 'first') {
                     voteCount.first++;
                     voteDetails.first.push(room.players.find(player => player.id === voterId).name);
-                }
-                else{
+                } else if (vote === 'second') {
                     voteCount.second++;
                     voteDetails.second.push(room.players.find(player => player.id === voterId).name);
+                } else {
+                    console.log("they are presenting");
                 }
             }
 
-            
-
-            if (voteCount.first > 0){
+            if (voteCount.first > 0) {
                 rooms[roomId].playersScore[firstPlayer]++;
-                if(voteCount.second == 0){
+                if (voteCount.second === 0) {
                     rooms[roomId].playersScore[firstPlayer] += BONUS;
                 }
             }
-            if (voteCount.second > 0){
+            if (voteCount.second > 0) {
                 rooms[roomId].playersScore[secondPlayer]++;
-                if(voteCount.first == 0){
+                if (voteCount.first === 0) {
                     rooms[roomId].playersScore[secondPlayer] += BONUS;
                 }
             }
 
             const winner = voteCount.first > voteCount.second ? currentPair[0].name : currentPair[1].name;
             const currentPairImages = {
-                first: room.images[currentPair[0].id],
-                second: room.images[currentPair[1].id]
+                first: room.images[firstPlayer],
+                second: room.images[secondPlayer]
             };
 
-            io.to(roomId).emit('vote_result', {winner, voteDetails, images: currentPairImages});
-            
+            io.to(roomId).emit('vote_result', { winner, voteDetails, images: currentPairImages });
+
             socket.once('advance_pair_server', () => {
-                console.log("Advancing pair")
+                console.log("Advancing pair");
                 room.currentPairIndex++;
                 room.votes = {};
-        
+
                 if (room.currentPairIndex < room.pairs.length) {
-                    console.log("starting next round of voting");
+                    console.log("Starting next round of voting");
                     startVoting(roomId);
                 } else if (room.round >= room.maxRounds) {
                     console.log("Final round over, determining winner");
@@ -242,9 +229,8 @@ io.on('connection', (socket) => {
                     const finalWinnerName = room.players.find(player => player.id === finalWinner).name;
                     io.to(roomId).emit('final_winner', { name: finalWinnerName });
                 } else {
-                    console.log("end of round");
+                    console.log("End of round");
                     room.round++;
-                    console.log("round", room.round);
                     room.currentPairIndex = 0;
                     room.pairs = pairPlayers(room.players);
                     room.images = {};
@@ -265,37 +251,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // socket.on('advance_pair_server', () => {
-    //     const room = rooms[socket.roomId]; // Assuming `socket.roomId` contains the correct room ID
-    //     if (!room) return;
-    
-    //     console.log("Advancing pair");
-    //     room.currentPairIndex++;
-    //     room.votes = {};
-    
-    //     if (room.currentPairIndex < room.pairs.length) {
-    //         console.log("starting next round of voting");
-    //         startVoting(socket.roomId);
-    //     } else {
-    //         console.log("end of round");
-    //         room.round++;
-    //         room.currentPairIndex = 0;
-    //         room.pairs = pairPlayers(room.players);
-    //         room.images = {};
-    //         io.to(socket.roomId).emit('end_round');
-    //         io.to(socket.roomId).emit('start_round', {
-    //             round: room.round,
-    //             pairs: room.pairs.map(pair => pair.map(player => player.name)),
-    //         });
-    //         room.pairs.forEach(pair => {
-    //             pair.forEach(player => {
-    //                 const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-    //                 io.to(player.id).emit('your_turn', randomPrompt);
-    //             });
-    //         });
-    //     }
-    // });
-
     socket.on('disconnect', () => {
         console.log('A user disconnected:', socket.id);
         for (const roomId in rooms) {
@@ -310,9 +265,7 @@ io.on('connection', (socket) => {
     });
 });
 
-
 function pairPlayers(players) {
-    // Shuffle the array of players
     for (let i = players.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [players[i], players[j]] = [players[j], players[i]];
@@ -329,20 +282,19 @@ function pairPlayers(players) {
     return pairs;
 }
 
-
 function startVoting(roomId) {
     const room = rooms[roomId];
     const currentPair = room.pairs[room.currentPairIndex];
     const images = currentPair.map(player => room.images[player.id]);
     const prompt = room.prompts[currentPair.map(player => player.id).join('-')];
-    io.to(roomId).emit('vote_pair', {images, prompt});
+    io.to(roomId).emit('vote_pair', { images, prompt,currentPair: currentPair.map(player => player.id)});
 }
 
-function getLocalIpAddy(){
+function getLocalIpAddy() {
     const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)){
-        for (const interface of interfaces[name]){
-            if (interface.family === 'IPv4' && !interface.internal){
+    for (const name of Object.keys(interfaces)) {
+        for (const interface of interfaces[name]) {
+            if (interface.family === 'IPv4' && !interface.internal) {
                 return interface.address;
             }
         }
