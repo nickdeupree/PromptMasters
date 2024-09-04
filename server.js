@@ -13,6 +13,7 @@ const io = new Server(server);
 
 const POLLINATIONS_API_URL = 'https://image.pollinations.ai/prompt/';
 let BONUS = 2;
+let devMode = false;
 
 app.use(express.static(path.join(__dirname, '/')));
 
@@ -76,8 +77,9 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('option_change', ({ roomId, maxRounds, bonusAmount, maxGenerations }) => {
-        socket.to(roomId).emit('update_options', { maxRounds, bonusAmount, maxGenerations });
+    socket.on('option_change', ({ roomId, maxRounds, bonusAmount, maxGenerations, dev }) => {
+        devMode = dev;
+        socket.to(roomId).emit('update_options', { maxRounds, bonusAmount, maxGenerations, dev });
     });
 
     socket.on('start_game', ({ roomId, maxRounds, bonusAmount, maxGenerations }) => {
@@ -85,7 +87,8 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('ensureVotingGone');
         io.to(roomId).emit('hide_final_winner');
         const room = rooms[roomId];
-        if (room && room.players.length > 1) {
+        console.log("devMode is ", devMode);
+        if (room && room.players.length > 3 || devMode == true) {
             console.log("Starting game with", room.players.length, "players");
             room.pairs = pairPlayers(room.players);
             room.currentPairIndex = 0;
@@ -112,6 +115,8 @@ io.on('connection', (socket) => {
                     io.to(player.id).emit('your_turn', 'Generate an image based on this prompt: ' + randomPrompt);
                 });
             });
+        }else{
+            io.to(roomId).emit('not_enough_players');
         }
     });
 
@@ -212,8 +217,12 @@ io.on('connection', (socket) => {
                 first: room.images[firstPlayer],
                 second: room.images[secondPlayer]
             };
+            const playerNames = {
+                first: currentPair[0].name,
+                second: currentPair[1].name
+            };
 
-            io.to(roomId).emit('vote_result', { winner, voteDetails, images: currentPairImages });
+            io.to(roomId).emit('vote_result', { winner, voteDetails, images: currentPairImages, playerNames });
 
             socket.once('advance_pair_server', () => {
                 console.log("Advancing pair");
@@ -287,7 +296,9 @@ function startVoting(roomId) {
     const currentPair = room.pairs[room.currentPairIndex];
     const images = currentPair.map(player => room.images[player.id]);
     const prompt = room.prompts[currentPair.map(player => player.id).join('-')];
-    io.to(roomId).emit('vote_pair', { images, prompt,currentPair: currentPair.map(player => player.id)});
+    const playerNames = currentPair.map(player => player.name); // Get player names
+
+    io.to(roomId).emit('vote_pair', { images, prompt, currentPair: currentPair.map(player => player.id), playerNames });
 }
 
 function getLocalIpAddy() {

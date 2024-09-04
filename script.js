@@ -2,11 +2,15 @@ const socket = io();
 
 const elements = {
     roomSetupDiv: document.getElementById('room-setup'),
+    instructionsDiv: document.getElementById('instructions'),
+    instructionsButton: document.getElementById('show-instructions'),
+    howToDiv: document.getElementById('how-to'),
     gameControlsDiv: document.getElementById('game-controls'),
     gameAreaDiv: document.getElementById('game-area'),
     pairPromptDiv: document.getElementById('pair-prompt'),
     imageGenerationDiv: document.getElementById('image-generation'),
     generatedImageDiv: document.getElementById('generated-image'),
+    userPromptInput: document.getElementById('user-prompt'),
     submitImageButton: document.getElementById('submit-image'),
     votingAreaDiv: document.getElementById('voting-area'),
     voteImagesDiv: document.getElementById('vote-images'),
@@ -22,7 +26,8 @@ const elements = {
     newGameButton: document.getElementById('new-game-button'),
     maxRoundsDropDown: document.getElementById('max-rounds'),
     bonusAmountDropDown: document.getElementById('bonus-amount'),
-    maxGenerationsDropDown: document.getElementById('max-generations')
+    maxGenerationsDropDown: document.getElementById('max-generations'),
+    devModeCheckbox: document.getElementById('dev-mode')
 };
 
 let currentRoomId = null;
@@ -31,22 +36,32 @@ let playerName = null;
 let remainingGenerations = parseInt(elements.maxGenerationsDropDown.value, 10);
 let score = 0;
 let generatedImages = [];
+let devMode = false;
+let instructions = false;
 
 function emitOptionChange() {
     const maxRounds = parseInt(elements.maxRoundsDropDown.value, 10);
     const bonusAmount = parseInt(elements.bonusAmountDropDown.value, 10);
     const maxGenerations = parseInt(elements.maxGenerationsDropDown.value, 10);
-    socket.emit('option_change', { roomId: currentRoomId, maxRounds, bonusAmount, maxGenerations });
+    const dev = elements.devModeCheckbox.checked;
+    devMode = dev;
+    socket.emit('option_change', { roomId: currentRoomId, maxRounds, bonusAmount, maxGenerations, dev });
 }
 
 elements.maxRoundsDropDown.addEventListener('change', emitOptionChange);
 elements.bonusAmountDropDown.addEventListener('change', emitOptionChange);
 elements.maxGenerationsDropDown.addEventListener('change', emitOptionChange);
+elements.devModeCheckbox.addEventListener('change', emitOptionChange);
 
-socket.on('update_options', ({ maxRounds, bonusAmount, maxGenerations }) => {
+socket.on('update_options', ({ maxRounds, bonusAmount, maxGenerations, dev }) => {
     elements.maxRoundsDropDown.value = maxRounds;
     elements.bonusAmountDropDown.value = bonusAmount;
     elements.maxGenerationsDropDown.value = maxGenerations;
+    elements.devModeCheckbox.checked = dev;
+});
+
+socket.on('not_enough_players', () => {
+    alert('Not enough players to start the game.');
 });
 
 document.getElementById('join-room').addEventListener('click', () => {
@@ -57,11 +72,24 @@ document.getElementById('join-room').addEventListener('click', () => {
             if (!isNameTaken) {
                 socket.emit('join_room', { roomId: currentRoomId, name: playerName });
                 elements.roomSetupDiv.style.display = 'none';
+                elements.instructionsDiv.style.display = 'none';
                 elements.gameControlsDiv.style.display = 'block';
             } else {
                 alert("Player name is taken. Please choose another name.");
             }
         });
+    }
+});
+
+elements.instructionsButton.addEventListener('click', () => {
+    if (!instructions){
+        elements.howToDiv.style.display = 'block';
+        elements.instructionsButton.textContent = 'Hide Instructions';
+        instructions = true;
+    }else{
+        elements.howToDiv.style.display = 'none';
+        elements.howToDiv.textContent = 'Show Instructions';
+        instructions = false;
     }
 });
 
@@ -74,7 +102,7 @@ document.getElementById('start-game').addEventListener('click', () => {
 });
 
 document.getElementById('generate-image').addEventListener('click', () => {
-    const prompt = document.getElementById('user-prompt').value;
+    const prompt = elements.userPromptInput.value;
     if (prompt) {
         socket.emit('generate_image', prompt);
     } else {
@@ -202,43 +230,52 @@ function updateGenerationLabel() {
     generationLabel.textContent = `Generations left: ${remainingGenerations}`;
 }
 
-socket.on('vote_pair', ({ images, prompt, currentPair}) => {
-
+socket.on('vote_pair', ({ images, prompt, currentPair, playerNames }) => {
     if (currentPair.includes(socket.id)){
         console.log("You are in the pair");
         elements.votingAreaDiv.style.display = 'block';
         elements.pairPromptDiv.innerHTML = `<p>Prompt: ${prompt}</p>`;
         elements.voteImagesDiv.innerHTML = `
-            <img src="${images[0]}" alt="First Image">
-            <img src="${images[1]}" alt="Second Image">
+            <div>
+                <p>Artist: ${playerNames[0]}</p>
+                <img src="${images[0]}" alt="First Image">
+            </div>
+            <div>
+                <p>Artist: ${playerNames[1]}</p>
+                <img src="${images[1]}" alt="Second Image">
+            </div>
         `;
-        // document.getElementById('vote-first').style.display = 'inline-block';
-        // document.getElementById('vote-second').style.display = 'inline-block';
         socket.emit('vote', currentRoomId, 'abstain');
-        //socket.emit('player_pressed_result_continue', currentRoomId);
-        //socket.emit('advancew_pair_server');
-    }else{
+    } else {
         elements.votingAreaDiv.style.display = 'block';
         elements.pairPromptDiv.innerHTML = `<p>Prompt: ${prompt}</p>`;
         elements.voteImagesDiv.innerHTML = `
-            <img src="${images[0]}" alt="First Image">
-            <img src="${images[1]}" alt="Second Image">
+            <div>
+                <p>Artist: ${playerNames[0]}</p>
+                <img src="${images[0]}" alt="First Image">
+            </div>
+            <div>
+                <p>Artist: ${playerNames[1]}</p>
+                <img src="${images[1]}" alt="Second Image">
+            </div>
         `;
         document.getElementById('vote-first').style.display = 'inline-block';
         document.getElementById('vote-second').style.display = 'inline-block';
     }
 });
 
-socket.on('vote_result', ({ winner, voteDetails, images }) => {
+socket.on('vote_result', ({ winner, voteDetails, images, playerNames }) => {
     elements.resultsDiv.style.display = 'block';
     elements.winnerSpan.textContent = `Winner: ${winner}`;
     elements.voteImagesDiv.innerHTML = `
         <div style="display: flex; justify-content: space-around; align-items: flex-start;">
             <div style="margin: 10px;">
+                <p>Artist: ${playerNames[Object.keys(images)[0]]}</p>
                 <img src="${images[Object.keys(images)[0]]}" alt="First Image">
                 <ul>${voteDetails.first.map(voter => `<li>${voter}</li>`).join('')}</ul>
             </div>
             <div style="margin: 10px;">
+                <p>Artist: ${playerNames[Object.keys(images)[1]]}</p>
                 <img src="${images[Object.keys(images)[1]]}" alt="Second Image">
                 <ul>${voteDetails.second.map(voter => `<li>${voter}</li>`).join('')}</ul>
             </div>
@@ -251,6 +288,7 @@ socket.on('end_round', () => {
     elements.imageGenerationDiv.style.display = 'none';
     elements.votingAreaDiv.style.display = 'none';
     elements.resultsDiv.style.display = 'none';
+    elements.userPromptInput.value = '';
     const maxRounds = parseInt(elements.maxRoundsDropDown.value, 10);
     const bonusAmount = parseInt(elements.bonusAmountDropDown.value, 10);
     const maxGenerations = parseInt(elements.maxGenerationsDropDown.value, 10);

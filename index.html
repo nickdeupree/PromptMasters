@@ -24,6 +24,21 @@
         <input type="text" id="room-id" placeholder="Enter Room ID">
         <button id="join-room">Join Room</button>
     </div>
+    <div id="instructions">
+        <button id="show-instructions">Show Instructions</button>
+        <div id="how-to" style="display: none;">
+            <h2>How to Play</h2>
+            <ul>
+                <li><strong>Join a Room:</strong> Enter a room ID to create or join a room.</li>
+                <li><strong>Start the Game:</strong> Start when enough players (4+) have joined.</li>
+                <li><strong>Generate Images:</strong> Receive prompts, generate images, and submit your favorite.</li>
+                <li><strong>Vote on Images:</strong> Vote for the best submitted image in the pair.</li>
+                <li><strong>Scoring:</strong> Earn points for submitting the winning image in your pair.</li>
+                <li><strong>End of Game:</strong> After the set rounds, the highest scorer wins.</li>
+            </ul>
+        </div>
+    </div>
+    
     
     <div id="game-controls" style="display: none;">
         <div id="player-list"></div>
@@ -53,7 +68,10 @@
             <option value="7">7</option>
             <option value="10">10</option>
         </select>
+        <label for="dev-mode">Dev Mode:</label>
+        <input type="checkbox" id="dev-mode" />
         <button id="start-game">Start Game</button>
+        
     </div>
 
     <div id="game-area" style="display: none;">
