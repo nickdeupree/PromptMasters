@@ -1,0 +1,22 @@
+.voting-image {
+    width: 800px;
+    height: 800px;
+}
+
+.generated-image {
+    width: 800px;
+    height: 800px;
+    max-width: 300px;
+    cursor: pointer;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+}
+
+.header img {
+    margin-right: 10px;
+    width: 50px;
+    height: 50px;
+}
