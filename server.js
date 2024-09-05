@@ -212,7 +212,15 @@ io.on('connection', (socket) => {
                 }
             }
 
-            const winner = voteCount.first > voteCount.second ? currentPair[0].name : currentPair[1].name;
+            let winner;
+            if (voteCount.first > voteCount.second) {
+                winner = currentPair[0].name;
+            } else if (voteCount.second > voteCount.first) {
+                winner = currentPair[1].name;
+            } else {
+                winner = "***Tie";
+            }
+            //const winner = voteCount.first > voteCount.second ? currentPair[0].name : currentPair[1].name;
             const currentPairImages = {
                 first: room.images[firstPlayer],
                 second: room.images[secondPlayer]

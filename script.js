@@ -304,7 +304,11 @@ socket.on('show_leaderboard', (room) => {
 socket.on('final_winner', ({ name }) => {
     elements.winnerDiv.style.display = 'block';
     elements.newGameButton.style.display = 'block';
-    elements.winner.textContent = `Final Winner: ${name}`;
+    if (name === "***Tie") {
+        elements.winner.textContent = `Draw`;
+    }else{
+        elements.winner.textContent = `Final Winner: ${name}`;
+    }
 });
 
 socket.on('hide_final_winner', () => {
