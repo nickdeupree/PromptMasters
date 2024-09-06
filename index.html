@@ -8,94 +8,96 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="header">
-        <img src="imgs/icon.png" alt="Icon" width="32" height="32">
-        <h1>Prompt Masters</h1>
-    </div>
-    
-    <div id="room-setup">
-        <input type="text" id="player-name" placeholder="Enter your name" />
-        <input type="text" id="room-id" placeholder="Enter Room ID">
-        <button id="join-room">Join Room</button>
-    </div>
-    <div id="instructions">
-        <button id="show-instructions">Show Instructions</button>
-        <div id="how-to" style="display: none;">
-            <h2>How to Play</h2>
-            <ul>
-                <li><strong>Join a Room:</strong> Enter a room ID to create or join a room.</li>
-                <li><strong>Start the Game:</strong> Start when enough players (4+) have joined.</li>
-                <li><strong>Generate Images:</strong> Receive prompts, generate images, and submit your favorite.</li>
-                <li><strong>Vote on Images:</strong> Vote for the best submitted image in the pair.</li>
-                <li><strong>Scoring:</strong> Earn points for submitting the winning image in your pair.</li>
-                <li><strong>End of Game:</strong> After the set rounds, the highest scorer wins.</li>
-            </ul>
-        </div>
-    </div>
-    
-    
-    <div id="game-controls" style="display: none;">
-        <div id="player-list"></div>
-        <h3>Game Options</h3>
-        <label for="max-rounds">Max Rounds:</label>
-        <select id="max-rounds">
-            <option value="1">1</option>
-            <option value="3" selected>3</option>
-            <option value="5">5</option>
-            <option value="7">7</option>
-            <option value="10">10</option>
-        </select>
-
-        <label for="bonus-amount">Bonus Amount:</label>
-        <select id="bonus-amount">
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2" selected>2</option>
-            <option value="3">3</option>
-            <option value="5">5</option>
-        </select>
-
-        <label for="max-generations">Max Generations per Round:</label>
-        <select id="max-generations">
-            <option value="3">3</option>
-            <option value="5" selected>5</option>
-            <option value="7">7</option>
-            <option value="10">10</option>
-        </select>
-        <label for="dev-mode">Dev Mode:</label>
-        <input type="checkbox" id="dev-mode" />
-        <button id="start-game">Start Game</button>
-        
-    </div>
-
-    <div id="game-area" style="display: none;">
-        <div id="pair-prompt"></div>
-        <div id="image-generation">
-            <textarea id="user-prompt" placeholder="Enter your prompt" rows="4" cols="50"></textarea>
-            <button id="generate-image">Generate Image</button>
-            <div id="generation-label"></div>
-            <button id="submit-image" style="display: none;">Submit Image</button>
-            <div id="generated-image"></div>
+    <div class = "container">
+        <div class="header">
+            <img src="imgs/icon.png" alt="Icon" width="32" height="32">
+            <h1>Prompt Masters</h1>
         </div>
         
-        <div id="voting-area" style="display: none;">
-            <div id="vote-images"></div>
-            <button id="vote-first">Vote for First Image</button>
-            <button id="vote-second">Vote for Second Image</button>
+        <div id="room-setup">
+            <input type="text" id="player-name" placeholder="Enter your name" />
+            <input type="text" id="room-id" placeholder="Enter Room ID">
+            <button id="join-room">Join Room</button>
         </div>
-        <div id="results" style="display: none;">
-            <span id="winner"></span>
-            <div id="vote-images"></div>
-            <button id="results-continue-button" style="display: none;">Continue</button>
+        <div id="instructions">
+            <button id="show-instructions">Show Instructions</button>
+            <div id="how-to" style="display: none;">
+                <h2>How to Play</h2>
+                <ul>
+                    <li><strong>Join a Room:</strong> Enter a room ID to create or join a room.</li>
+                    <li><strong>Start the Game:</strong> Start when enough players (4+) have joined.</li>
+                    <li><strong>Generate Images:</strong> Receive prompts, generate images, and submit your favorite.</li>
+                    <li><strong>Vote on Images:</strong> Vote for the best submitted image in the pair.</li>
+                    <li><strong>Scoring:</strong> Earn points for submitting the winning image in your pair.</li>
+                    <li><strong>End of Game:</strong> After the set rounds, the highest scorer wins.</li>
+                </ul>
+            </div>
         </div>
-        <div id="leaderboard" style="display: none;">
-            <div id="leaderboard-title"><h2>Leaderboard</h2></div>
-            <div id="leaderboard-list"></div>
-            <button id="leaderboard-continue-button" style="display: none;">Continue</button>
+        
+        
+        <div id="game-controls" style="display: none;">
+            <div id="player-list"></div>
+            <h3>Game Options</h3>
+            <label for="max-rounds">Max Rounds:</label>
+            <select id="max-rounds">
+                <option value="1">1</option>
+                <option value="3" selected>3</option>
+                <option value="5">5</option>
+                <option value="7">7</option>
+                <option value="10">10</option>
+            </select>
+    
+            <label for="bonus-amount">Bonus Amount:</label>
+            <select id="bonus-amount">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+                <option value="5">5</option>
+            </select>
+    
+            <label for="max-generations">Max Generations per Round:</label>
+            <select id="max-generations">
+                <option value="3">3</option>
+                <option value="5" selected>5</option>
+                <option value="7">7</option>
+                <option value="10">10</option>
+            </select>
+            <label for="dev-mode">Dev Mode:</label>
+            <input type="checkbox" id="dev-mode" />
+            <button id="start-game">Start Game</button>
+            
         </div>
-        <div id="final-winner-section" style="display: none;">
-            <h2 id="final-winner"></h2>
-            <button id="new-game-button" style="display: none;">Start New Game</button>
+    
+        <div id="game-area" style="display: none;">
+            <div id="pair-prompt"></div>
+            <div id="image-generation">
+                <textarea id="user-prompt" placeholder="Enter your prompt" rows="4" cols="50"></textarea>
+                <button id="generate-image">Generate Image</button>
+                <div id="generation-label"></div>
+                <button id="submit-image" style="display: none;">Submit Image</button>
+                <div id="generated-image"></div>
+            </div>
+            
+            <div id="voting-area" style="display: none;">
+                <div id="vote-images"></div>
+                <button id="vote-first">Vote for First Image</button>
+                <button id="vote-second">Vote for Second Image</button>
+            </div>
+            <div id="results" style="display: none;">
+                <span id="winner"></span>
+                <div id="vote-images"></div>
+                <button id="results-continue-button" style="display: none;">Continue</button>
+            </div>
+            <div id="leaderboard" style="display: none;">
+                <div id="leaderboard-title"><h2>Leaderboard</h2></div>
+                <div id="leaderboard-list"></div>
+                <button id="leaderboard-continue-button" style="display: none;">Continue</button>
+            </div>
+            <div id="final-winner-section" style="display: none;">
+                <h2 id="final-winner"></h2>
+                <button id="new-game-button" style="display: none;">Start New Game</button>
+            </div>
         </div>
     </div>
 

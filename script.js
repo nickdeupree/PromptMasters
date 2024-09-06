@@ -266,7 +266,13 @@ socket.on('vote_pair', ({ images, prompt, currentPair, playerNames }) => {
 
 socket.on('vote_result', ({ winner, voteDetails, images, playerNames }) => {
     elements.resultsDiv.style.display = 'block';
-    elements.winnerSpan.textContent = `Winner: ${winner}`;
+    if (winner == "***Tie") {
+        console.log("it's a tie");
+        elements.winnerSpan.textContent = `Draw`;
+    }else{
+        elements.winnerSpan.textContent = `Final Winner: ${name}`;
+    }
+    //elements.winnerSpan.textContent = `Winner: ${winner}`;
     elements.voteImagesDiv.innerHTML = `
         <div style="display: flex; justify-content: space-around; align-items: flex-start;">
             <div style="margin: 10px;">
@@ -302,9 +308,11 @@ socket.on('show_leaderboard', (room) => {
 });
 
 socket.on('final_winner', ({ name }) => {
+    console.log(name);
     elements.winnerDiv.style.display = 'block';
     elements.newGameButton.style.display = 'block';
-    if (name === "***Tie") {
+    if (name == "***Tie") {
+        console.log("it's a tie");
         elements.winner.textContent = `Draw`;
     }else{
         elements.winner.textContent = `Final Winner: ${name}`;

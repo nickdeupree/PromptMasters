@@ -1,22 +1,181 @@
-.voting-image {
-    width: 800px;
-    height: 800px;
-}
-
-.generated-image {
-    width: 800px;
-    height: 800px;
-    max-width: 300px;
-    cursor: pointer;
-}
-
-.header {
+/* General styling for the page */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
     display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    padding-top: 120px; /* Ensure the content is pushed down enough to clear the header */
+    overflow-x: hidden;
+}
+
+/* Header styling - fixed at the top */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    text-align: center;
+    background-color: #6a8caf;
+    color: #fff;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
 }
 
 .header img {
     margin-right: 10px;
     width: 50px;
     height: 50px;
+}
+
+/* Centering content in the middle of the page */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: calc(100vh - 120px); /* Ensure container takes full height minus header */
+}
+
+/* Room setup and instructions */
+#room-setup,
+#instructions,
+#game-controls,
+#game-area {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* Input fields and dropdowns */
+#room-setup input,
+#game-controls select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Button styles */
+button {
+    background-color: #6a8caf;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #5b7a9a;
+}
+
+/* Submit button centered */
+#submit-image {
+    display: block;
+    margin: 20px auto;
+}
+
+/* Game options list */
+#game-controls {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#game-controls h3 {
+    margin-bottom: 20px;
+}
+
+#game-controls label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+/* Game area styling */
+/* Game area styling with fixed size */
+#game-area {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 800px; /* Set fixed width */
+    height: 600px; /* Set fixed height */
+    overflow-y: auto; /* Allow vertical scrolling if content overflows */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    max-width: 100%; /* Ensure it still fits within smaller screens */
+}
+
+
+/* Image generation section */
+#generated-image img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
+}
+
+/* Voting area - Images side by side and vote buttons centered below */
+#voting-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#vote-images {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-right: 10px;
+    padding-left: 10px;
+    max-width: 100%;
+}
+
+#vote-images div {
+    text-align: center;
+    max-width: 300px;
+}
+
+#vote-first, #vote-second {
+    display: inline-block;
+    margin-top: 10px;
+}
+
+/* Scrollbar setup */
+html {
+    scroll-behavior: smooth;
+}
+
+body::-webkit-scrollbar {
+    width: 12px;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #6a8caf;
+    border-radius: 6px;
+}
+
+/* Centering the continue buttons */
+#results-continue-button,
+#leaderboard-continue-button,
+#new-game-button {
+    display: block;
+    margin: 20px auto;
 }
